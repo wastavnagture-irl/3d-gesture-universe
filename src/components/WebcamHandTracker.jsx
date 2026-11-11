@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   createHandLandmarker,
-  analyzeHandGestures,
-  drawHandSkeleton,
+  analyzeDualHandGestures,
+  drawDualHandSkeletons,
 } from '../utils/handDetection';
 import {
   Camera,
@@ -10,7 +10,7 @@ import {
   Minimize2,
   Maximize2,
   RefreshCw,
-  Sparkles,
+  Users,
   Zap,
 } from 'lucide-react';
 
@@ -30,8 +30,9 @@ const WebcamHandTracker = ({
   const [cameraError, setCameraError] = useState(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const [detectedGesture, setDetectedGesture] = useState({
-    gesture: 'NONE',
-    label: 'Place hand in webcam view',
+    count: 0,
+    dualGesture: 'NONE',
+    label: 'Place hand(s) in webcam view',
     icon: '🔍',
   });
   const [visionFps, setVisionFps] = useState(0);
@@ -75,10 +76,9 @@ const WebcamHandTracker = ({
       stopCamera();
       onHandUpdate?.({
         isActive: false,
-        hasHand: false,
-        gesture: 'NONE',
-        screenX: 0,
-        screenY: 0,
+        count: 0,
+        hands: [],
+        dualGesture: 'NONE',
       });
       return;
     }
@@ -97,8 +97,8 @@ const WebcamHandTracker = ({
       setCameraError(null);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 480 },
-          height: { ideal: 360 },
+          width: { ideal: 640 },
+          height: { ideal: 480 },
           facingMode: 'user',
         },
         audio: false,
@@ -136,7 +136,7 @@ const WebcamHandTracker = ({
     }
   };
 
-  // Main Detection Loop
+  // Main Detection Loop with Dual Hand Support
   const startPredictionLoop = () => {
     let lastVideoTime = -1;
 
@@ -165,50 +165,46 @@ const WebcamHandTracker = ({
           }
 
           if (results.landmarks && results.landmarks.length > 0) {
-            const landmarks = results.landmarks[0];
-            const gestureInfo = analyzeHandGestures(landmarks);
-            setDetectedGesture(gestureInfo);
+            // Phase 3: Dual-Hand Analysis
+            const dualInfo = analyzeDualHandGestures(results.landmarks);
+            setDetectedGesture(dualInfo);
 
-            // Draw 21-landmark skeleton on mirrored PiP canvas
-            drawHandSkeleton(ctx, landmarks, canvas.width, canvas.height, gestureInfo);
+            // Draw both skeletons with distinct Cyan (Hand 1) & Magenta (Hand 2)
+            drawDualHandSkeletons(ctx, results.landmarks, canvas.width, canvas.height, dualInfo);
 
-            // Calculate mirrored coordinates (-1 to 1) for Three.js
-            const mirroredX = 1.0 - gestureInfo.palmCenter.x; // Webcam mirror
-            const screenX = (mirroredX - 0.5) * 2.0;
-            const screenY = -(gestureInfo.palmCenter.y - 0.5) * 2.0;
-
-            // Calculate movement velocity delta
-            const deltaX = mirroredX - prevPalmRef.current.x;
-            const deltaY = gestureInfo.palmCenter.y - prevPalmRef.current.y;
-            prevPalmRef.current = { x: mirroredX, y: gestureInfo.palmCenter.y };
+            // Compute velocities / deltas
+            const primaryHand = dualInfo.hand1 || dualInfo.hands[0];
+            const deltaX = primaryHand.mirroredX - prevPalmRef.current.x;
+            const deltaY = primaryHand.palmCenter.y - prevPalmRef.current.y;
+            prevPalmRef.current = { x: primaryHand.mirroredX, y: primaryHand.palmCenter.y };
 
             onHandUpdate?.({
               isActive: true,
-              hasHand: true,
-              gesture: gestureInfo.gesture,
-              label: gestureInfo.label,
-              icon: gestureInfo.icon,
-              screenX,
-              screenY,
-              zDepth: gestureInfo.palmCenter.z,
+              count: dualInfo.count,
+              dualGesture: dualInfo.dualGesture,
+              label: dualInfo.label,
+              sublabel: dualInfo.sublabel,
+              icon: dualInfo.icon,
+              themeClass: dualInfo.themeClass,
+              hand1: dualInfo.hand1,
+              hand2: dualInfo.hand2,
+              handDistance: dualInfo.handDistance,
               deltaX,
               deltaY,
-              pinchDist: gestureInfo.pinchDist,
-              extendedFingers: gestureInfo.extendedFingers,
             });
           } else {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             setDetectedGesture({
-              gesture: 'NONE',
-              label: 'Place hand in webcam view',
+              count: 0,
+              dualGesture: 'NONE',
+              label: 'Place hand(s) in webcam view',
               icon: '🔍',
             });
             onHandUpdate?.({
               isActive: true,
-              hasHand: false,
-              gesture: 'NONE',
-              screenX: 0,
-              screenY: 0,
+              count: 0,
+              hands: [],
+              dualGesture: 'NONE',
             });
           }
         } catch (e) {
@@ -231,38 +227,133 @@ const WebcamHandTracker = ({
     animFrameRef.current = requestAnimationFrame(predict);
   };
 
-  // Simulation fallback triggers (useful for testing gestures even if camera is off)
-  const triggerSimulatedGesture = (gestureType) => {
-    let label = 'Simulated Gesture';
-    let icon = '🖐️';
-    if (gestureType === 'OPEN_PALM') {
-      label = 'Cosmic Wind Repel (Open Palm)';
-      icon = '🖐️';
-    } else if (gestureType === 'FIST') {
-      label = 'Black Hole Singularity (Fist)';
-      icon = '🕳️';
-    } else if (gestureType === 'PINCH') {
-      label = 'Orbital Condensation (Pinch)';
-      icon = '🤏';
-    } else if (gestureType === 'SWIPE') {
-      label = 'Cosmic Tilt (Swipe)';
-      icon = '👋';
+  // Phase 3 Simulation triggers for testing Dual-Hand modes
+  const triggerSimulatedDualGesture = (mode) => {
+    let update = null;
+
+    if (mode === 'TWIN_SINGULARITIES') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'TWIN_SINGULARITIES',
+        label: 'Twin Singularities (Dual Fists)',
+        sublabel: 'Binary Black Holes Gravitational Collapse',
+        icon: '🕳️🕳️',
+        themeClass: 'twin-fists',
+        hand1: {
+          screenX: -0.45,
+          screenY: 0.1,
+          gesture: 'FIST',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.45,
+          screenY: -0.1,
+          gesture: 'FIST',
+          handIndex: 1,
+        },
+        handDistance: 0.48,
+        deltaX: 0,
+        deltaY: 0,
+      };
+    } else if (mode === 'ENERGY_BRIDGE') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'ENERGY_BRIDGE',
+        label: 'Energy Bridge Portal (Dual Palms)',
+        sublabel: 'High-Density Particle Conduit Linking Hands',
+        icon: '⚡',
+        themeClass: 'energy-bridge',
+        hand1: {
+          screenX: -0.5,
+          screenY: 0.0,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.5,
+          screenY: 0.0,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        handDistance: 0.55,
+        deltaX: 0,
+        deltaY: 0,
+      };
+    } else if (mode === 'COSMIC_STRETCH') {
+      // Toggle expanded vs condensed scale
+      const dist = Math.random() > 0.5 ? 0.75 : 0.25;
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'COSMIC_STRETCH',
+        label: 'Cosmic Stretch / Universe Scale',
+        sublabel: dist > 0.5 ? 'Cosmic Expansion Active (1.8x Scale)' : 'Cosmic Condensation Active (0.6x Scale)',
+        icon: '✨',
+        themeClass: 'cosmic-stretch',
+        hand1: {
+          screenX: -dist / 2,
+          screenY: 0.1,
+          gesture: 'PINCH',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: dist / 2,
+          screenY: -0.1,
+          gesture: 'PINCH',
+          handIndex: 1,
+        },
+        handDistance: dist,
+        deltaX: 0,
+        deltaY: 0,
+      };
+    } else if (mode === 'OPEN_PALM') {
+      update = {
+        isActive: true,
+        count: 1,
+        dualGesture: 'OPEN_PALM',
+        label: 'Cosmic Wind Repel (Open Palm)',
+        sublabel: 'Single Hand Active',
+        icon: '🖐️',
+        themeClass: 'open_palm',
+        hand1: {
+          screenX: 0,
+          screenY: 0,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: null,
+        handDistance: 0,
+        deltaX: 0,
+        deltaY: 0,
+      };
+    } else if (mode === 'FIST') {
+      update = {
+        isActive: true,
+        count: 1,
+        dualGesture: 'FIST',
+        label: 'Black Hole Singularity (Fist)',
+        sublabel: 'Single Hand Active',
+        icon: '🕳️',
+        themeClass: 'fist',
+        hand1: {
+          screenX: 0,
+          screenY: 0,
+          gesture: 'FIST',
+          handIndex: 0,
+        },
+        hand2: null,
+        handDistance: 0,
+        deltaX: 0,
+        deltaY: 0,
+      };
     }
 
-    setDetectedGesture({ gesture: gestureType, label, icon });
-    onHandUpdate?.({
-      isActive: true,
-      hasHand: true,
-      gesture: gestureType,
-      label,
-      icon,
-      screenX: (Math.random() - 0.5) * 0.4,
-      screenY: (Math.random() - 0.5) * 0.4,
-      deltaX: gestureType === 'SWIPE' ? 0.08 : 0,
-      deltaY: 0,
-      pinchDist: gestureType === 'PINCH' ? 0.1 : 0.8,
-      extendedFingers: gestureType === 'OPEN_PALM' ? 5 : gestureType === 'FIST' ? 0 : 2,
-    });
+    if (update) {
+      setDetectedGesture(update);
+      onHandUpdate?.(update);
+    }
   };
 
   if (!enabled) return null;
@@ -273,7 +364,7 @@ const WebcamHandTracker = ({
       <div className="pip-header">
         <div className="pip-status-group">
           <span className={`pip-status-dot ${cameraError ? 'error' : modelReady ? 'active' : 'loading'}`} />
-          <span className="pip-title">AI VISION SENSOR</span>
+          <span className="pip-title">AI VISION (DUAL HAND)</span>
           {modelReady && !cameraError && (
             <span className="pip-fps-badge">{visionFps} FPS</span>
           )}
@@ -316,7 +407,7 @@ const WebcamHandTracker = ({
             {isLoadingModel && (
               <div className="pip-overlay-message">
                 <RefreshCw size={18} className="spin-icon" />
-                <span>Loading Vision AI...</span>
+                <span>Loading Dual-Hand Vision AI...</span>
               </div>
             )}
 
@@ -324,50 +415,48 @@ const WebcamHandTracker = ({
               <div className="pip-overlay-message error">
                 <CameraOff size={20} />
                 <p>{cameraError}</p>
-                <div className="demo-sim-hint">Try Demo Gesture Buttons Below:</div>
+                <div className="demo-sim-hint">Test Dual-Hand Features Below:</div>
               </div>
             )}
 
             {/* Gesture Badge Overlaid on Bottom of PiP */}
-            <div className={`pip-gesture-badge gesture-${detectedGesture.gesture.toLowerCase()}`}>
+            <div className={`pip-gesture-badge ${detectedGesture.count === 2 ? 'dual-hands-badge' : ''}`}>
               <span className="gesture-badge-icon">{detectedGesture.icon}</span>
               <span className="gesture-badge-text">
-                {detectedGesture.gesture === 'NONE'
-                  ? 'SEARCHING HAND'
-                  : detectedGesture.gesture}
+                {detectedGesture.count === 2 ? `DUAL HANDS: ${detectedGesture.dualGesture}` : detectedGesture.dualGesture || 'SEARCHING'}
               </span>
             </div>
           </div>
 
-          {/* Quick Demo Gesture Buttons (Always handy for testing) */}
-          <div className="pip-sim-buttons">
+          {/* Quick Dual-Hand Simulation Buttons */}
+          <div className="pip-sim-buttons dual-buttons">
             <button
-              className="sim-btn"
-              onClick={() => triggerSimulatedGesture('OPEN_PALM')}
-              title="Simulate Open Palm Repel"
+              className="sim-btn twin-btn"
+              onClick={() => triggerSimulatedDualGesture('TWIN_SINGULARITIES')}
+              title="Simulate Twin Black Holes (Both Fists)"
             >
-              🖐️ Repel
+              🕳️🕳️ Twin Black Holes
+            </button>
+            <button
+              className="sim-btn bridge-btn"
+              onClick={() => triggerSimulatedDualGesture('ENERGY_BRIDGE')}
+              title="Simulate Energy Bridge Portal (Both Palms)"
+            >
+              ⚡ Energy Bridge
+            </button>
+            <button
+              className="sim-btn stretch-btn"
+              onClick={() => triggerSimulatedDualGesture('COSMIC_STRETCH')}
+              title="Simulate Cosmic Stretch / Scale"
+            >
+              ✨ Stretch / Scale
             </button>
             <button
               className="sim-btn"
-              onClick={() => triggerSimulatedGesture('FIST')}
-              title="Simulate Black Hole Fist"
+              onClick={() => triggerSimulatedDualGesture('OPEN_PALM')}
+              title="Simulate Single Open Palm"
             >
-              🕳️ Fist
-            </button>
-            <button
-              className="sim-btn"
-              onClick={() => triggerSimulatedGesture('PINCH')}
-              title="Simulate Pinch Condense"
-            >
-              🤏 Pinch
-            </button>
-            <button
-              className="sim-btn"
-              onClick={() => triggerSimulatedGesture('SWIPE')}
-              title="Simulate Hand Swipe Tilt"
-            >
-              👋 Tilt
+              🖐️ Single Repel
             </button>
           </div>
         </>

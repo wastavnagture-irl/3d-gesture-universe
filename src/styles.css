@@ -1,6 +1,6 @@
 /* ===================================================================
    3D GESTURE PARTICLE UNIVERSE - HIGH PERFORMANCE COSMIC ENGINE CSS
-   PHASE 2: AI HAND VISION & WEBCAM PIP STYLES
+   PHASE 3: DUAL-HAND KINETIC GESTURE STYLES
    =================================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
@@ -267,6 +267,45 @@ button {
   background: rgba(5, 150, 105, 0.3);
 }
 
+/* Phase 3: Dual Active Pill Badge in Top Bar */
+.dual-active-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.15), rgba(217, 70, 239, 0.15));
+  border: 1px solid rgba(217, 70, 239, 0.4);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #f1f5f9;
+  box-shadow: 0 0 16px rgba(217, 70, 239, 0.25);
+  animation: glowPulse 2s infinite ease-in-out;
+}
+
+@keyframes glowPulse {
+  0%, 100% { border-color: rgba(217, 70, 239, 0.4); }
+  50% { border-color: rgba(6, 182, 212, 0.7); box-shadow: 0 0 20px rgba(6, 182, 212, 0.35); }
+}
+
+.dual-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dual-dot.cyan {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.dual-dot.magenta {
+  background: #f472b6;
+  box-shadow: 0 0 8px #f472b6;
+}
+
 /* Interaction Mode Pill Switch */
 .interaction-mode-pill {
   display: flex;
@@ -412,7 +451,7 @@ button {
 }
 
 /* ===================================================================
-   LIVE HUD GESTURE BADGE
+   LIVE HUD GESTURE BADGE (PHASE 3 DUAL GESTURES)
    =================================================================== */
 .live-gesture-hud-badge {
   position: absolute;
@@ -434,6 +473,29 @@ button {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
+.live-gesture-hud-badge.twin-fists {
+  border-color: rgba(217, 70, 239, 0.7);
+  background: rgba(24, 10, 36, 0.85);
+  box-shadow: 0 12px 40px rgba(217, 70, 239, 0.45);
+}
+
+.live-gesture-hud-badge.energy-bridge {
+  border-color: rgba(52, 211, 153, 0.7);
+  background: rgba(8, 30, 24, 0.85);
+  box-shadow: 0 12px 40px rgba(52, 211, 153, 0.4);
+}
+
+.live-gesture-hud-badge.cosmic-stretch {
+  border-color: rgba(251, 191, 36, 0.7);
+  background: rgba(35, 26, 8, 0.85);
+  box-shadow: 0 12px 40px rgba(251, 191, 36, 0.35);
+}
+
+.live-gesture-hud-badge.hybrid-vortex {
+  border-color: rgba(168, 85, 247, 0.65);
+  box-shadow: 0 12px 35px rgba(168, 85, 247, 0.3);
+}
+
 .live-gesture-hud-badge.open-palm {
   border-color: rgba(52, 211, 153, 0.55);
   box-shadow: 0 12px 35px rgba(52, 211, 153, 0.25);
@@ -449,7 +511,7 @@ button {
   box-shadow: 0 12px 35px rgba(251, 191, 36, 0.25);
 }
 
-.live-gesture-hud-badge.swipe {
+.live-gesture-hud-badge.dual-tracking {
   border-color: rgba(56, 189, 248, 0.55);
   box-shadow: 0 12px 35px rgba(56, 189, 248, 0.25);
 }
@@ -459,8 +521,8 @@ button {
 }
 
 .hud-gesture-icon-wrap {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -920,13 +982,13 @@ button {
 }
 
 /* ===================================================================
-   PICTURE-IN-PICTURE WEBCAM AI SENSOR COMPONENT
+   PICTURE-IN-PICTURE WEBCAM AI SENSOR COMPONENT (DUAL HAND)
    =================================================================== */
 .pip-webcam-container {
   position: absolute;
   left: 36px;
   bottom: 84px;
-  width: 250px;
+  width: 270px;
   border-radius: 18px;
   padding: 12px;
   z-index: 15;
@@ -941,7 +1003,7 @@ button {
 }
 
 .pip-webcam-container.minimized {
-  width: 180px;
+  width: 190px;
   padding: 8px 12px;
 }
 
@@ -1025,7 +1087,7 @@ button {
 .pip-viewport {
   position: relative;
   width: 100%;
-  height: 145px;
+  height: 155px;
   border-radius: 12px;
   overflow: hidden;
   background: #020617;
@@ -1103,6 +1165,11 @@ button {
   backdrop-filter: blur(8px);
 }
 
+.pip-gesture-badge.dual-hands-badge {
+  border-color: rgba(217, 70, 239, 0.6);
+  background: linear-gradient(90deg, rgba(6, 182, 212, 0.25), rgba(217, 70, 239, 0.25));
+}
+
 .gesture-badge-icon {
   font-size: 12px;
 }
@@ -1115,40 +1182,21 @@ button {
   color: #ffffff;
 }
 
-.gesture-open_palm {
-  border-color: rgba(52, 211, 153, 0.6);
-  background: rgba(5, 150, 105, 0.35);
-}
-
-.gesture-fist {
-  border-color: rgba(217, 70, 239, 0.6);
-  background: rgba(162, 28, 175, 0.35);
-}
-
-.gesture-pinch {
-  border-color: rgba(251, 191, 36, 0.6);
-  background: rgba(180, 83, 9, 0.35);
-}
-
-.gesture-swipe {
-  border-color: rgba(56, 189, 248, 0.6);
-  background: rgba(2, 132, 199, 0.35);
-}
-
-/* Quick Gesture Simulation Buttons */
-.pip-sim-buttons {
+/* Quick Gesture Simulation Buttons (Phase 3 Dual Hands) */
+.pip-sim-buttons.dual-buttons {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
   margin-top: 8px;
 }
 
 .sim-btn {
-  padding: 4px 0;
+  padding: 5px 4px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 9px;
+  font-weight: 600;
   color: var(--color-text-muted);
   text-align: center;
   transition: all 0.15s ease;
@@ -1158,6 +1206,21 @@ button {
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.25);
+}
+
+.sim-btn.twin-btn:hover {
+  border-color: rgba(217, 70, 239, 0.6);
+  background: rgba(217, 70, 239, 0.2);
+}
+
+.sim-btn.bridge-btn:hover {
+  border-color: rgba(52, 211, 153, 0.6);
+  background: rgba(52, 211, 153, 0.2);
+}
+
+.sim-btn.stretch-btn:hover {
+  border-color: rgba(251, 191, 36, 0.6);
+  background: rgba(251, 191, 36, 0.2);
 }
 
 /* ===================================================================
@@ -1267,7 +1330,7 @@ button {
 
 .help-card {
   position: relative;
-  width: 540px;
+  width: 560px;
   max-width: 100%;
   max-height: 85vh;
   overflow-y: auto;
@@ -1547,7 +1610,7 @@ kbd {
     left: 16px;
     bottom: auto;
     top: 80px;
-    width: 170px;
+    width: 200px;
   }
   .pip-viewport {
     height: 110px;
