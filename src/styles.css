@@ -182,6 +182,18 @@ button {
   color: #c084fc;
 }
 
+.top-system-badge.jarvis-badge {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(168, 85, 247, 0.15) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+}
+
+.top-system-badge.quantum-badge {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.16) 0%, rgba(245, 158, 11, 0.15) 50%, rgba(168, 85, 247, 0.18) 100%);
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.3);
+}
+
 .live-dot {
   width: 6px;
   height: 6px;
@@ -477,6 +489,142 @@ button {
   border-color: rgba(217, 70, 239, 0.7);
   background: rgba(24, 10, 36, 0.85);
   box-shadow: 0 12px 40px rgba(217, 70, 239, 0.45);
+}
+
+/* ===================================================================
+   PHASE 6 KINETIC FORCE & MORPH HUD BADGES
+   =================================================================== */
+.live-gesture-hud-badge.heart-morph {
+  border-color: rgba(244, 63, 94, 0.95);
+  background: rgba(38, 8, 20, 0.92);
+  box-shadow: 0 12px 50px rgba(244, 63, 94, 0.65), inset 0 0 24px rgba(251, 113, 133, 0.35);
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), heartBeating 1.2s infinite ease-in-out;
+}
+
+@keyframes heartBeating {
+  0%, 100% { transform: translate(-50%, 0) scale(1); box-shadow: 0 12px 45px rgba(244, 63, 94, 0.55); }
+  25% { transform: translate(-50%, -2px) scale(1.04); box-shadow: 0 14px 60px rgba(244, 63, 94, 0.8); }
+  40% { transform: translate(-50%, 0) scale(0.98); }
+  55% { transform: translate(-50%, -1px) scale(1.02); }
+}
+
+.live-gesture-hud-badge.cosmic-collapse {
+  border-color: rgba(217, 70, 239, 0.95);
+  background: rgba(28, 8, 38, 0.92);
+  box-shadow: 0 12px 50px rgba(217, 70, 239, 0.65), inset 0 0 24px rgba(232, 121, 249, 0.35);
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), collapseSuction 1.6s infinite ease-in-out;
+}
+
+@keyframes collapseSuction {
+  0%, 100% { box-shadow: 0 12px 45px rgba(217, 70, 239, 0.55), inset 0 0 18px rgba(217, 70, 239, 0.3); }
+  50% { box-shadow: 0 12px 65px rgba(232, 121, 249, 0.85), inset 0 0 32px rgba(217, 70, 239, 0.6); }
+}
+
+.live-gesture-hud-badge.supernova-blast {
+  border-color: rgba(249, 115, 22, 0.95);
+  background: rgba(45, 16, 4, 0.92);
+  box-shadow: 0 12px 55px rgba(249, 115, 22, 0.7), inset 0 0 26px rgba(251, 146, 60, 0.4);
+  animation: hudDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1), supernovaFlash 1.4s infinite ease-out;
+}
+
+@keyframes supernovaFlash {
+  0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.9), 0 12px 40px rgba(249, 115, 22, 0.5); }
+  60% { box-shadow: 0 0 0 22px rgba(249, 115, 22, 0), 0 12px 60px rgba(249, 115, 22, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0), 0 12px 40px rgba(249, 115, 22, 0.3); }
+}
+
+.live-gesture-hud-badge.vortex-tornado {
+  border-color: rgba(56, 189, 248, 0.95);
+  background: rgba(4, 24, 38, 0.92);
+  box-shadow: 0 12px 50px rgba(56, 189, 248, 0.6), inset 0 0 22px rgba(56, 189, 248, 0.3);
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), tornadoSpinGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes tornadoSpinGlow {
+  0%, 100% { box-shadow: 0 12px 45px rgba(56, 189, 248, 0.5), inset 0 0 18px rgba(56, 189, 248, 0.25); }
+  50% { box-shadow: 0 12px 60px rgba(14, 165, 233, 0.8), inset 0 0 28px rgba(56, 189, 248, 0.5); }
+}
+
+.live-gesture-hud-badge.elastic-scale {
+  border-color: rgba(168, 85, 247, 0.9);
+  background: rgba(22, 10, 38, 0.92);
+  box-shadow: 0 12px 45px rgba(168, 85, 247, 0.55), inset 0 0 20px rgba(192, 132, 252, 0.3);
+}
+
+.live-gesture-hud-badge.quantum-freeze {
+  border-color: rgba(6, 182, 212, 0.95);
+  background: rgba(3, 24, 30, 0.92);
+  box-shadow: 0 12px 50px rgba(6, 182, 212, 0.6), inset 0 0 22px rgba(52, 211, 153, 0.3);
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), freezePulse 2s infinite ease-in-out;
+}
+
+@keyframes freezePulse {
+  0%, 100% { box-shadow: 0 12px 45px rgba(6, 182, 212, 0.5), inset 0 0 20px rgba(52, 211, 153, 0.2); }
+  50% { box-shadow: 0 12px 60px rgba(52, 211, 153, 0.7), inset 0 0 30px rgba(6, 182, 212, 0.4); }
+}
+
+.live-gesture-hud-badge.dimensional-portal {
+  border-color: rgba(245, 158, 11, 0.95);
+  background: rgba(38, 18, 4, 0.92);
+  box-shadow: 0 12px 50px rgba(245, 158, 11, 0.65), inset 0 0 24px rgba(251, 191, 36, 0.35);
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), strangeRiftPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes strangeRiftPulse {
+  0%, 100% { box-shadow: 0 12px 45px rgba(245, 158, 11, 0.55), inset 0 0 18px rgba(245, 158, 11, 0.3); }
+  50% { box-shadow: 0 12px 65px rgba(251, 191, 36, 0.8), inset 0 0 32px rgba(245, 158, 11, 0.5); }
+}
+
+.live-gesture-hud-badge.jedi-levitation {
+  border-color: rgba(168, 85, 247, 0.95);
+  background: rgba(24, 8, 40, 0.92);
+  box-shadow: 0 12px 50px rgba(168, 85, 247, 0.6), inset 0 0 22px rgba(168, 85, 247, 0.3);
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), levitationFloat 2.2s infinite ease-in-out;
+}
+
+@keyframes levitationFloat {
+  0%, 100% { transform: translate(-50%, 0); box-shadow: 0 12px 45px rgba(168, 85, 247, 0.5); }
+  50% { transform: translate(-50%, -4px); box-shadow: 0 16px 60px rgba(168, 85, 247, 0.75); }
+}
+
+.live-gesture-hud-badge.deflector-shield {
+  border-color: rgba(6, 182, 212, 0.85);
+  background: rgba(4, 25, 38, 0.9);
+  box-shadow: 0 12px 45px rgba(6, 182, 212, 0.5), inset 0 0 18px rgba(6, 182, 212, 0.2);
+}
+
+.live-gesture-hud-badge.holo-steer {
+  border-color: rgba(139, 92, 246, 0.85);
+  background: rgba(22, 12, 45, 0.9);
+  box-shadow: 0 12px 45px rgba(139, 92, 246, 0.45), inset 0 0 18px rgba(139, 92, 246, 0.2);
+}
+
+.live-gesture-hud-badge.cosmic-ray {
+  border-color: rgba(251, 191, 36, 0.85);
+  background: rgba(38, 28, 6, 0.9);
+  box-shadow: 0 12px 45px rgba(251, 191, 36, 0.5), inset 0 0 18px rgba(251, 191, 36, 0.2);
+}
+
+.live-gesture-hud-badge.cosmic-snap {
+  border-color: rgba(244, 63, 94, 0.9);
+  background: rgba(45, 10, 24, 0.92);
+  box-shadow: 0 12px 50px rgba(244, 63, 94, 0.6), inset 0 0 24px rgba(244, 63, 94, 0.3);
+  animation: hudDrop 0.2s cubic-bezier(0.16, 1, 0.3, 1), snapShockwave 1.2s infinite ease-out;
+}
+
+@keyframes snapShockwave {
+  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8), 0 12px 40px rgba(244, 63, 94, 0.5); }
+  70% { box-shadow: 0 0 0 18px rgba(244, 63, 94, 0), 0 12px 50px rgba(244, 63, 94, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0), 0 12px 40px rgba(244, 63, 94, 0.3); }
+}
+
+.jarvis-override-pulse {
+  animation: hudDrop 0.25s cubic-bezier(0.16, 1, 0.3, 1), jarvisBorderPulse 2s infinite ease-in-out !important;
+}
+
+@keyframes jarvisBorderPulse {
+  0%, 100% { border-width: 1px; filter: brightness(1); }
+  50% { border-width: 1px; filter: brightness(1.25); }
 }
 
 .live-gesture-hud-badge.energy-bridge {
@@ -1182,12 +1330,57 @@ button {
   color: #ffffff;
 }
 
-/* Quick Gesture Simulation Buttons (Phase 3 Dual Hands) */
-.pip-sim-buttons.dual-buttons {
+/* Quick Gesture Simulation Buttons (Phase 4 JARVIS, Phase 5 Quantum & Phase 6 Kinetic) */
+.pip-sim-scroll-area {
+  max-height: 195px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  margin-top: 6px;
+}
+
+.pip-sim-scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.pip-sim-scroll-area::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+
+.pip-sim-scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.pip-sim-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.5);
+}
+
+.pip-sim-section-label {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent-cyan);
+  margin-top: 6px;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.pip-sim-buttons.kinetic-grid,
+.pip-sim-buttons.dual-buttons,
+.pip-sim-buttons.jarvis-grid,
+.pip-sim-buttons.quantum-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 5px;
-  margin-top: 8px;
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.kinetic-btn.elastic-btn {
+  grid-column: span 2;
 }
 
 .sim-btn {
@@ -1200,6 +1393,14 @@ button {
   color: var(--color-text-muted);
   text-align: center;
   transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.sim-btn.kinetic-btn,
+.sim-btn.jarvis-btn,
+.sim-btn.quantum-btn {
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .sim-btn:hover {
@@ -1208,7 +1409,106 @@ button {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
-.sim-btn.twin-btn:hover {
+/* Phase 6 Kinetic Button Styles */
+.sim-btn.heart-btn:hover,
+.sim-btn.heart-btn.active {
+  border-color: rgba(244, 63, 94, 0.9);
+  background: rgba(244, 63, 94, 0.28);
+  color: #fecdd3;
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.55);
+}
+
+.sim-btn.collapse-btn:hover,
+.sim-btn.collapse-btn.active {
+  border-color: rgba(217, 70, 239, 0.9);
+  background: rgba(217, 70, 239, 0.28);
+  color: #f5d0fe;
+  box-shadow: 0 0 14px rgba(217, 70, 239, 0.55);
+}
+
+.sim-btn.supernova-btn:hover,
+.sim-btn.supernova-btn.active {
+  border-color: rgba(249, 115, 22, 0.95);
+  background: rgba(249, 115, 22, 0.28);
+  color: #ffedd5;
+  box-shadow: 0 0 16px rgba(249, 115, 22, 0.6);
+}
+
+.sim-btn.tornado-btn:hover,
+.sim-btn.tornado-btn.active {
+  border-color: rgba(56, 189, 248, 0.9);
+  background: rgba(56, 189, 248, 0.28);
+  color: #e0f2fe;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.55);
+}
+
+.sim-btn.elastic-btn:hover,
+.sim-btn.elastic-btn.active {
+  border-color: rgba(168, 85, 247, 0.9);
+  background: rgba(168, 85, 247, 0.28);
+  color: #f3e8ff;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.55);
+}
+
+/* Phase 5 & 4 Button Styles */
+.sim-btn.freeze-btn:hover,
+.sim-btn.freeze-btn.active {
+  border-color: rgba(6, 182, 212, 0.9);
+  background: rgba(6, 182, 212, 0.25);
+  color: #a5f3fc;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.5);
+}
+
+.sim-btn.portal-btn:hover,
+.sim-btn.portal-btn.active {
+  border-color: rgba(245, 158, 11, 0.9);
+  background: rgba(245, 158, 11, 0.25);
+  color: #fef08a;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
+}
+
+.sim-btn.levitate-btn:hover,
+.sim-btn.levitate-btn.active {
+  border-color: rgba(168, 85, 247, 0.9);
+  background: rgba(168, 85, 247, 0.25);
+  color: #f5d0fe;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.5);
+}
+
+.sim-btn.ray-btn:hover,
+.sim-btn.ray-btn.active {
+  border-color: rgba(251, 191, 36, 0.8);
+  background: rgba(251, 191, 36, 0.22);
+  color: #fef08a;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
+
+.sim-btn.shield-btn:hover,
+.sim-btn.shield-btn.active {
+  border-color: rgba(6, 182, 212, 0.8);
+  background: rgba(6, 182, 212, 0.22);
+  color: #a5f3fc;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+}
+
+.sim-btn.steer-btn:hover,
+.sim-btn.steer-btn.active {
+  border-color: rgba(139, 92, 246, 0.8);
+  background: rgba(139, 92, 246, 0.22);
+  color: #ddd6fe;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.sim-btn.snap-btn:hover,
+.sim-btn.snap-btn.active {
+  border-color: rgba(244, 63, 94, 0.8);
+  background: rgba(244, 63, 94, 0.25);
+  color: #fecdd3;
+  box-shadow: 0 0 15px rgba(244, 63, 94, 0.5);
+}
+
+.sim-btn.twin-btn:hover,
+.sim-btn.twin-btn.active {
   border-color: rgba(217, 70, 239, 0.6);
   background: rgba(217, 70, 239, 0.2);
 }

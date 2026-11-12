@@ -43,6 +43,13 @@ export const SHAPES = [
     desc: 'Twisting magnetic donut vortex with relativistic toroidal flux lines.',
     key: '6',
   },
+  {
+    id: 'heart',
+    name: 'Crystalline Heart',
+    icon: 'Heart',
+    desc: 'Volumetric 3D glowing heart geometry with harmonic filaments.',
+    key: '7',
+  },
 ];
 
 export const COLOR_THEMES = [
@@ -93,7 +100,6 @@ export function generateShapeTargets(shapeId, count) {
 
     switch (shapeId) {
       case 'galaxy': {
-        // Core vs Arms
         const isCore = Math.random() < 0.22;
         if (isCore) {
           const [cx, cy, cz] = randomInSphere(2.4);
@@ -114,13 +120,11 @@ export function generateShapeTargets(shapeId, count) {
       }
 
       case 'nebula': {
-        // Volumetric turbulent nebula with filament ripples
         const u = 2 * p - 1;
         const theta = i * goldenRatio;
         const sinPhi = Math.sqrt(Math.max(0, 1 - u * u));
         const baseR = 10.5;
 
-        // Multi-frequency harmonic perturbation
         const ripple =
           Math.sin(theta * 4) * 1.2 +
           Math.cos(u * 8) * 1.1 +
@@ -136,7 +140,6 @@ export function generateShapeTargets(shapeId, count) {
       }
 
       case 'helix': {
-        // DNA double helix with ladder rungs
         const turns = 7;
         const height = 24;
         const radius = 4.2;
@@ -145,13 +148,11 @@ export function generateShapeTargets(shapeId, count) {
 
         const isRung = i % 8 === 0;
         if (isRung) {
-          // Cross-rung between strand 1 and strand 2
-          const factor = Math.random() * 2 - 1; // from -1 to 1
+          const factor = Math.random() * 2 - 1;
           x = Math.cos(t) * radius * factor;
           z = Math.sin(t) * radius * factor;
           y += (Math.random() - 0.5) * 0.2;
         } else {
-          // Main strands: strand 0 or strand 1 (offset by PI)
           const strand = i % 2 === 0 ? 0 : Math.PI;
           const jitter = (Math.random() - 0.5) * 0.4;
           x = Math.cos(t + strand) * (radius + jitter);
@@ -162,13 +163,11 @@ export function generateShapeTargets(shapeId, count) {
       }
 
       case 'cube': {
-        // Chaos hypercube with outer shell, inner wireframe, and kinetic cloud
         const mode = Math.random();
         const side = 15;
         const half = side / 2;
 
         if (mode < 0.6) {
-          // On one of the 6 cube faces
           const face = Math.floor(Math.random() * 6);
           const u = (Math.random() - 0.5) * side;
           const v = (Math.random() - 0.5) * side;
@@ -179,7 +178,6 @@ export function generateShapeTargets(shapeId, count) {
           else if (face === 4) [x, y, z] = [u, v, half];
           else [x, y, z] = [u, v, -half];
         } else if (mode < 0.85) {
-          // Edges & wireframe scaffolding
           const edge = Math.floor(Math.random() * 12);
           const pos = (Math.random() - 0.5) * side;
           const sign1 = Math.random() > 0.5 ? half : -half;
@@ -188,7 +186,6 @@ export function generateShapeTargets(shapeId, count) {
           else if (edge < 8) [x, y, z] = [sign1, pos, sign2];
           else [x, y, z] = [sign1, sign2, pos];
         } else {
-          // Swirling internal quantum matrix
           [x, y, z] = randomInSphere(half * 0.7);
         }
         x += (Math.random() - 0.5) * 0.3;
@@ -198,18 +195,15 @@ export function generateShapeTargets(shapeId, count) {
       }
 
       case 'saturn': {
-        // Ringed planet
         const isPlanet = Math.random() < 0.28;
         if (isPlanet) {
           const [px, py, pz] = randomInSphere(4.2);
           x = px; y = py; z = pz;
         } else {
-          // Concentric ring with Cassini gap
           let ringR = Math.random() < 0.55 ? 5.8 + Math.random() * 3.4 : 9.8 + Math.random() * 4.6;
           const ringAngle = Math.random() * Math.PI * 2;
           const ringY = (Math.random() - 0.5) * 0.25;
 
-          // Tilt the ring by ~26 degrees
           const tilt = 0.45;
           const rawX = Math.cos(ringAngle) * ringR;
           const rawZ = Math.sin(ringAngle) * ringR;
@@ -221,7 +215,6 @@ export function generateShapeTargets(shapeId, count) {
       }
 
       case 'torus': {
-        // Relativistic torus
         const majorR = 9.2;
         const minorR = 3.6;
         const u = Math.random() * Math.PI * 2;
@@ -235,6 +228,19 @@ export function generateShapeTargets(shapeId, count) {
         break;
       }
 
+      case 'heart': {
+        const t = Math.random() * Math.PI * 2;
+        const hx = 16 * Math.pow(Math.sin(t), 3);
+        const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+        const hz = (Math.random() - 0.5) * 5;
+        const scale = 0.5;
+
+        x = hx * scale + (Math.random() - 0.5);
+        y = hy * scale + (Math.random() - 0.5);
+        z = hz;
+        break;
+      }
+
       default:
         [x, y, z] = randomInSphere(10);
     }
@@ -244,6 +250,58 @@ export function generateShapeTargets(shapeId, count) {
     positions[idx + 2] = z;
   }
 
+  return positions;
+}
+
+// Phase 4: Deflector Shield 2D Planar / Hexagonal Energy Grid Targets
+export function generateDeflectorShieldTargets(count) {
+  const positions = new Float32Array(count * 3);
+  const rows = Math.floor(Math.sqrt(count * 0.75));
+  const cols = Math.ceil(count / rows);
+  const width = 34;
+  const height = 25;
+
+  for (let i = 0; i < count; i++) {
+    const idx = i * 3;
+    const r = Math.floor(i / cols);
+    const c = i % cols;
+
+    // Staggered hexagonal honeycomb placement
+    const xOffset = r % 2 === 0 ? 0 : 0.5;
+    const u = ((c + xOffset) / cols - 0.5) * width;
+    const v = (r / rows - 0.5) * height;
+
+    // Slight cylindrical shield curvature toward camera
+    const z = -Math.pow(u / (width * 0.5), 2) * 1.8 + (Math.random() - 0.5) * 0.25;
+
+    positions[idx] = u + (Math.random() - 0.5) * 0.2;
+    positions[idx + 1] = v + (Math.random() - 0.5) * 0.2;
+    positions[idx + 2] = z;
+  }
+  return positions;
+}
+
+// Phase 6: Kinetic 3D Crystalline Heart Geometry Targets
+export function generateHeartTargets(count) {
+  const positions = new Float32Array(count * 3);
+  const scale = 0.5;
+
+  for (let i = 0; i < count; i++) {
+    const idx = i * 3;
+    // Random parameter t from 0 to 2 * PI
+    const t = Math.random() * Math.PI * 2;
+
+    // Parametric equation for a heart shape
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+
+    // Add some random depth (z) and scatter for a volumetric 3D effect
+    const z = (Math.random() - 0.5) * 5;
+
+    positions[idx] = x * scale + (Math.random() - 0.5); // slight noise
+    positions[idx + 1] = y * scale + (Math.random() - 0.5);
+    positions[idx + 2] = z;
+  }
   return positions;
 }
 
@@ -260,12 +318,9 @@ export function generateParticleColors(themeId, targets, count) {
     const z = targets[idx + 2];
     const dist = Math.sqrt(x * x + y * y + z * z);
 
-    // Color gradient based on distance from core and vertical distribution
     let t = Math.min(1, dist / 15);
-    // Add subtle noise/variation per particle
     t = Math.max(0, Math.min(1, t + (Math.random() - 0.5) * 0.15));
 
-    // Map t across the palette
     const scaledT = t * (threeColors.length - 1);
     const c1Idx = Math.floor(scaledT);
     const c2Idx = Math.min(threeColors.length - 1, c1Idx + 1);
@@ -273,7 +328,6 @@ export function generateParticleColors(themeId, targets, count) {
 
     const color = threeColors[c1Idx].clone().lerp(threeColors[c2Idx], blend);
 
-    // Give core particles higher brightness / glow
     if (dist < 2.5) {
       color.addScalar(0.2);
     }

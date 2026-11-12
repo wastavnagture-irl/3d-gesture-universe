@@ -36,10 +36,13 @@ const WebcamHandTracker = ({
     icon: '🔍',
   });
   const [visionFps, setVisionFps] = useState(0);
+  const [activeSimMode, setActiveSimMode] = useState(null);
 
   // Position history for smoothing and delta calculation
   const prevPalmRef = useRef({ x: 0.5, y: 0.5 });
   const fpsCountRef = useRef({ frames: 0, lastTime: performance.now() });
+  const simulatedModeRef = useRef(null);
+  const lastSimUpdateRef = useRef(null);
 
   // Initialize MediaPipe Model when enabled
   useEffect(() => {
@@ -165,11 +168,18 @@ const WebcamHandTracker = ({
           }
 
           if (results.landmarks && results.landmarks.length > 0) {
-            // Phase 3: Dual-Hand Analysis
+            // Real hands detected: deactivate simulation latch
+            if (simulatedModeRef.current) {
+              simulatedModeRef.current = null;
+              lastSimUpdateRef.current = null;
+              setActiveSimMode(null);
+            }
+
+            // Phase 4 & 5: Quantum & JARVIS Dual-Hand Analysis
             const dualInfo = analyzeDualHandGestures(results.landmarks);
             setDetectedGesture(dualInfo);
 
-            // Draw both skeletons with distinct Cyan (Hand 1) & Magenta (Hand 2)
+            // Draw both skeletons with distinct Cyan (Hand 1) & Magenta (Hand 2) + JARVIS Overlays
             drawDualHandSkeletons(ctx, results.landmarks, canvas.width, canvas.height, dualInfo);
 
             // Compute velocities / deltas
@@ -189,23 +199,31 @@ const WebcamHandTracker = ({
               hand1: dualInfo.hand1,
               hand2: dualInfo.hand2,
               handDistance: dualInfo.handDistance,
+              steerAngleDelta: dualInfo.steerAngleDelta,
+              isCosmicSnap: dualInfo.isCosmicSnap,
+              activeRayHand: dualInfo.activeRayHand,
               deltaX,
               deltaY,
             });
           } else {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            setDetectedGesture({
-              count: 0,
-              dualGesture: 'NONE',
-              label: 'Place hand(s) in webcam view',
-              icon: '🔍',
-            });
-            onHandUpdate?.({
-              isActive: true,
-              count: 0,
-              hands: [],
-              dualGesture: 'NONE',
-            });
+            // If simulation mode is active, maintain it continuously
+            if (simulatedModeRef.current && lastSimUpdateRef.current) {
+              onHandUpdate?.(lastSimUpdateRef.current);
+            } else {
+              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              setDetectedGesture({
+                count: 0,
+                dualGesture: 'NONE',
+                label: 'Place hand(s) in webcam view',
+                icon: '🔍',
+              });
+              onHandUpdate?.({
+                isActive: true,
+                count: 0,
+                hands: [],
+                dualGesture: 'NONE',
+              });
+            }
           }
         } catch (e) {
           console.warn('Frame detection exception:', e);
@@ -227,11 +245,219 @@ const WebcamHandTracker = ({
     animFrameRef.current = requestAnimationFrame(predict);
   };
 
-  // Phase 3 Simulation triggers for testing Dual-Hand modes
+  // Phase 4, Phase 5 & Phase 6 Simulation triggers
   const triggerSimulatedDualGesture = (mode) => {
+    if (activeSimMode === mode) {
+      simulatedModeRef.current = null;
+      lastSimUpdateRef.current = null;
+      setActiveSimMode(null);
+      const reset = {
+        isActive: true,
+        count: 0,
+        hands: [],
+        dualGesture: 'NONE',
+        label: 'Simulation Disengaged',
+        icon: '🔍',
+      };
+      setDetectedGesture(reset);
+      onHandUpdate?.(reset);
+      return;
+    }
+
+    setActiveSimMode(mode);
+    simulatedModeRef.current = mode;
     let update = null;
 
-    if (mode === 'TWIN_SINGULARITIES') {
+    if (mode === 'QUANTUM_FREEZE') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'QUANTUM_FREEZE',
+        label: 'QUANTUM FREEZE ACTIVE',
+        sublabel: 'Matrix Protocol: Global Velocity Dilated to 5% Slow-Motion',
+        icon: '❄️',
+        themeClass: 'quantum-freeze',
+        hand1: {
+          screenX: -0.35,
+          screenY: -0.35,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.35,
+          screenY: -0.35,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        handDistance: 0.45,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+        isQuantumTimeFreeze: true,
+      };
+    } else if (mode === 'DIMENSIONAL_PORTAL') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'DIMENSIONAL_PORTAL',
+        label: 'DIMENSIONAL PORTAL OPENED',
+        sublabel: 'Doctor Strange Rift: High-Speed Swirling Ring Vortex Active',
+        icon: '🌀',
+        themeClass: 'dimensional-portal',
+        hand1: {
+          screenX: -0.1,
+          screenY: 0.05,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.1,
+          screenY: 0.05,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        portalCenter: {
+          screenX: 0.0,
+          screenY: 0.05,
+          normX: 0.5,
+          normY: 0.45,
+        },
+        handDistance: 0.2,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+        isDimensionalPortal: true,
+      };
+    } else if (mode === 'JEDI_LEVITATION') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'JEDI_LEVITATION',
+        label: 'JEDI LEVITATION ACTIVE',
+        sublabel: 'Anti-Gravity Field: Inverted Gravitational Y-Axis Force',
+        icon: '🛸',
+        themeClass: 'jedi-levitation',
+        hand1: {
+          screenX: -0.4,
+          screenY: 0.2,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.4,
+          screenY: 0.2,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        handDistance: 0.5,
+        deltaX: 0,
+        deltaY: 0.12,
+        isCosmicSnap: false,
+        isJediLevitation: true,
+      };
+    } else if (mode === 'COSMIC_RAY') {
+      update = {
+        isActive: true,
+        count: 1,
+        dualGesture: 'COSMIC_RAY',
+        label: 'JARVIS OVERRIDE: Cosmic Ray',
+        sublabel: 'Concentrated High-Velocity Particle Beam',
+        icon: '⚡',
+        themeClass: 'cosmic-ray',
+        hand1: {
+          screenX: 0.1,
+          screenY: -0.15,
+          gesture: 'COSMIC_RAY',
+          isCosmicRay: true,
+          indexScreenX: 0.1,
+          indexScreenY: -0.15,
+          indexRayDir: { x: 0.1, y: 0.8, z: -1.0 },
+          handIndex: 0,
+        },
+        hand2: null,
+        handDistance: 0,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+      };
+    } else if (mode === 'DEFLECTOR_SHIELD') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'DEFLECTOR_SHIELD',
+        label: 'JARVIS OVERRIDE: Deflector Shield',
+        sublabel: '2D Quantum Energy Barrier Matrix Active',
+        icon: '🛡️',
+        themeClass: 'deflector-shield',
+        hand1: {
+          screenX: -0.4,
+          screenY: 0.1,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.4,
+          screenY: 0.1,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        handDistance: 0.5,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+      };
+    } else if (mode === 'HOLO_STEER') {
+      // Toggle steering rotation angle
+      const deltaAngle = (Math.random() - 0.5) * 0.35 + 0.15;
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'HOLO_STEER',
+        label: 'JARVIS OVERRIDE: Holographic Rotation',
+        sublabel: 'Kinetic Hologram Axis Steering Universe Rotation',
+        icon: '🌐',
+        themeClass: 'holo-steer',
+        hand1: {
+          screenX: -0.45,
+          screenY: -0.15,
+          gesture: 'SWIPE',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.45,
+          screenY: 0.15,
+          gesture: 'SWIPE',
+          handIndex: 1,
+        },
+        handDistance: 0.55,
+        steerAngleDelta: deltaAngle,
+        deltaX: 0.08,
+        deltaY: 0.04,
+        isCosmicSnap: false,
+      };
+    } else if (mode === 'COSMIC_SNAP') {
+      update = {
+        isActive: true,
+        count: 1,
+        dualGesture: 'COSMIC_SNAP',
+        label: 'JARVIS OVERRIDE: The Cosmic Snap',
+        sublabel: 'Massive Radial Supernova Shockwave Detonated',
+        icon: '🫰',
+        themeClass: 'cosmic-snap',
+        hand1: {
+          screenX: 0,
+          screenY: 0,
+          gesture: 'COSMIC_SNAP',
+          isCosmicSnap: true,
+          handIndex: 0,
+        },
+        hand2: null,
+        handDistance: 0,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: true,
+      };
+    } else if (mode === 'TWIN_SINGULARITIES') {
       update = {
         isActive: true,
         count: 2,
@@ -255,6 +481,7 @@ const WebcamHandTracker = ({
         handDistance: 0.48,
         deltaX: 0,
         deltaY: 0,
+        isCosmicSnap: false,
       };
     } else if (mode === 'ENERGY_BRIDGE') {
       update = {
@@ -280,9 +507,9 @@ const WebcamHandTracker = ({
         handDistance: 0.55,
         deltaX: 0,
         deltaY: 0,
+        isCosmicSnap: false,
       };
     } else if (mode === 'COSMIC_STRETCH') {
-      // Toggle expanded vs condensed scale
       const dist = Math.random() > 0.5 ? 0.75 : 0.25;
       update = {
         isActive: true,
@@ -307,50 +534,157 @@ const WebcamHandTracker = ({
         handDistance: dist,
         deltaX: 0,
         deltaY: 0,
+        isCosmicSnap: false,
       };
-    } else if (mode === 'OPEN_PALM') {
+    } else if (mode === 'COSMIC_COLLAPSE') {
       update = {
         isActive: true,
-        count: 1,
-        dualGesture: 'OPEN_PALM',
-        label: 'Cosmic Wind Repel (Open Palm)',
-        sublabel: 'Single Hand Active',
-        icon: '🖐️',
-        themeClass: 'open_palm',
+        count: 2,
+        dualGesture: 'COSMIC_COLLAPSE',
+        label: 'COSMIC COLLAPSE ACTIVE',
+        sublabel: 'Massive Gravitational Midpoint Pull Condensing Core',
+        icon: '💥',
+        themeClass: 'cosmic-collapse',
         hand1: {
-          screenX: 0,
-          screenY: 0,
+          screenX: -0.06,
+          screenY: 0.0,
+          gesture: 'PINCH',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.06,
+          screenY: 0.0,
+          gesture: 'PINCH',
+          handIndex: 1,
+        },
+        collapseMid: {
+          screenX: 0.0,
+          screenY: 0.0,
+        },
+        handDistance: 0.12,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+        isCosmicCollapse: true,
+      };
+    } else if (mode === 'SUPERNOVA_BLAST') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'SUPERNOVA_BLAST',
+        label: 'SUPERNOVA BLAST DETONATED',
+        sublabel: 'High-Magnitude Outward Radial Shockwave Repelling All Particles',
+        icon: '💥',
+        themeClass: 'supernova-blast',
+        hand1: {
+          screenX: -0.65,
+          screenY: -0.1,
           gesture: 'OPEN_PALM',
           handIndex: 0,
         },
-        hand2: null,
-        handDistance: 0,
+        hand2: {
+          screenX: 0.65,
+          screenY: 0.1,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        handDistance: 1.3,
         deltaX: 0,
         deltaY: 0,
+        isCosmicSnap: false,
+        isSupernovaBlast: true,
       };
-    } else if (mode === 'FIST') {
+    } else if (mode === 'VORTEX_TORNADO') {
       update = {
         isActive: true,
-        count: 1,
-        dualGesture: 'FIST',
-        label: 'Black Hole Singularity (Fist)',
-        sublabel: 'Single Hand Active',
-        icon: '🕳️',
-        themeClass: 'fist',
+        count: 2,
+        dualGesture: 'VORTEX_TORNADO',
+        label: 'VORTEX TORNADO ENGAGED',
+        sublabel: 'Dual Index Fingers: High-Velocity Rotational Updraft Funnel',
+        icon: '🌪️',
+        themeClass: 'vortex-tornado',
         hand1: {
-          screenX: 0,
-          screenY: 0,
-          gesture: 'FIST',
+          screenX: -0.15,
+          screenY: 0.0,
+          gesture: 'POINTING',
           handIndex: 0,
         },
-        hand2: null,
-        handDistance: 0,
+        hand2: {
+          screenX: 0.15,
+          screenY: 0.0,
+          gesture: 'POINTING',
+          handIndex: 1,
+        },
+        collapseMid: {
+          screenX: 0.0,
+          screenY: 0.0,
+        },
+        handDistance: 0.3,
         deltaX: 0,
         deltaY: 0,
+        isCosmicSnap: false,
+        isVortexTornado: true,
+      };
+    } else if (mode === 'ELASTIC_SCALE') {
+      const scaleVal = Math.random() > 0.5 ? 2.1 : 0.45;
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'ELASTIC_SCALE',
+        label: 'ELASTIC UNIVERSE SCALING',
+        sublabel: `Dynamic 3D Distance Multiplier: ${scaleVal.toFixed(2)}x Scale`,
+        icon: '📏',
+        themeClass: 'elastic-scale',
+        hand1: {
+          screenX: -0.4,
+          screenY: 0.0,
+          gesture: 'OPEN_PALM',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.4,
+          screenY: 0.0,
+          gesture: 'OPEN_PALM',
+          handIndex: 1,
+        },
+        handDistance: scaleVal * 0.28,
+        elasticScale: scaleVal,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+        isElasticScale: true,
+      };
+    } else if (mode === 'HEART_MORPH') {
+      update = {
+        isActive: true,
+        count: 2,
+        dualGesture: 'HEART_MORPH',
+        label: 'SHAPE-SHIFT: 3D HEART MORPH',
+        sublabel: 'Two-Hand Heart Pose: 40,000 Particles Forming Crystalline Heart',
+        icon: '❤️',
+        themeClass: 'heart-morph',
+        hand1: {
+          screenX: -0.12,
+          screenY: 0.05,
+          gesture: 'PINCH',
+          handIndex: 0,
+        },
+        hand2: {
+          screenX: 0.12,
+          screenY: 0.05,
+          gesture: 'PINCH',
+          handIndex: 1,
+        },
+        handDistance: 0.24,
+        deltaX: 0,
+        deltaY: 0,
+        isCosmicSnap: false,
+        isHeartMorph: true,
       };
     }
 
     if (update) {
+      lastSimUpdateRef.current = update;
       setDetectedGesture(update);
       onHandUpdate?.(update);
     }
@@ -364,7 +698,7 @@ const WebcamHandTracker = ({
       <div className="pip-header">
         <div className="pip-status-group">
           <span className={`pip-status-dot ${cameraError ? 'error' : modelReady ? 'active' : 'loading'}`} />
-          <span className="pip-title">AI VISION (DUAL HAND)</span>
+          <span className="pip-title">JARVIS AI SENSOR</span>
           {modelReady && !cameraError && (
             <span className="pip-fps-badge">{visionFps} FPS</span>
           )}
@@ -407,7 +741,7 @@ const WebcamHandTracker = ({
             {isLoadingModel && (
               <div className="pip-overlay-message">
                 <RefreshCw size={18} className="spin-icon" />
-                <span>Loading Dual-Hand Vision AI...</span>
+                <span>Loading JARVIS Vision AI...</span>
               </div>
             )}
 
@@ -415,7 +749,7 @@ const WebcamHandTracker = ({
               <div className="pip-overlay-message error">
                 <CameraOff size={20} />
                 <p>{cameraError}</p>
-                <div className="demo-sim-hint">Test Dual-Hand Features Below:</div>
+                <div className="demo-sim-hint">Trigger JARVIS Gestures Below:</div>
               </div>
             )}
 
@@ -423,41 +757,117 @@ const WebcamHandTracker = ({
             <div className={`pip-gesture-badge ${detectedGesture.count === 2 ? 'dual-hands-badge' : ''}`}>
               <span className="gesture-badge-icon">{detectedGesture.icon}</span>
               <span className="gesture-badge-text">
-                {detectedGesture.count === 2 ? `DUAL HANDS: ${detectedGesture.dualGesture}` : detectedGesture.dualGesture || 'SEARCHING'}
+                {detectedGesture.label ? detectedGesture.label.replace('JARVIS OVERRIDE: ', '').replace(' ACTIVE', '') : 'SEARCHING'}
               </span>
             </div>
           </div>
 
-          {/* Quick Dual-Hand Simulation Buttons */}
-          <div className="pip-sim-buttons dual-buttons">
-            <button
-              className="sim-btn twin-btn"
-              onClick={() => triggerSimulatedDualGesture('TWIN_SINGULARITIES')}
-              title="Simulate Twin Black Holes (Both Fists)"
-            >
-              🕳️🕳️ Twin Black Holes
-            </button>
-            <button
-              className="sim-btn bridge-btn"
-              onClick={() => triggerSimulatedDualGesture('ENERGY_BRIDGE')}
-              title="Simulate Energy Bridge Portal (Both Palms)"
-            >
-              ⚡ Energy Bridge
-            </button>
-            <button
-              className="sim-btn stretch-btn"
-              onClick={() => triggerSimulatedDualGesture('COSMIC_STRETCH')}
-              title="Simulate Cosmic Stretch / Scale"
-            >
-              ✨ Stretch / Scale
-            </button>
-            <button
-              className="sim-btn"
-              onClick={() => triggerSimulatedDualGesture('OPEN_PALM')}
-              title="Simulate Single Open Palm"
-            >
-              🖐️ Single Repel
-            </button>
+          <div className="pip-sim-scroll-area">
+            {/* Phase 6 Kinetic & Morph Gestures */}
+            <div className="pip-sim-section-label">KINETIC & MORPH:</div>
+            <div className="pip-sim-buttons kinetic-grid">
+              <button
+                className={`sim-btn kinetic-btn heart-btn ${activeSimMode === 'HEART_MORPH' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('HEART_MORPH')}
+                title="Shape-Shifting Morph (3D Crystalline Heart)"
+              >
+                ❤️ Heart
+              </button>
+              <button
+                className={`sim-btn kinetic-btn collapse-btn ${activeSimMode === 'COSMIC_COLLAPSE' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('COSMIC_COLLAPSE')}
+                title="Cosmic Collapse (Midpoint Pull to Dense Core)"
+              >
+                💥 Collapse
+              </button>
+              <button
+                className={`sim-btn kinetic-btn supernova-btn ${activeSimMode === 'SUPERNOVA_BLAST' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('SUPERNOVA_BLAST')}
+                title="Supernova Blast (Sudden Outward Radial Repulsion)"
+              >
+                🌟 Supernova
+              </button>
+              <button
+                className={`sim-btn kinetic-btn tornado-btn ${activeSimMode === 'VORTEX_TORNADO' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('VORTEX_TORNADO')}
+                title="Vortex Tornado (Dual Index Tangential Spin & Updraft)"
+              >
+                🌪️ Tornado
+              </button>
+              <button
+                className={`sim-btn kinetic-btn elastic-btn ${activeSimMode === 'ELASTIC_SCALE' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('ELASTIC_SCALE')}
+                title="Elastic Universe (Dynamic 3D Distance Scale)"
+              >
+                📏 Elastic
+              </button>
+            </div>
+
+            {/* Phase 5 Cinematic Quantum Gestures */}
+            <div className="pip-sim-section-label">QUANTUM MATRIX:</div>
+            <div className="pip-sim-buttons quantum-grid">
+              <button
+                className={`sim-btn quantum-btn freeze-btn ${activeSimMode === 'QUANTUM_FREEZE' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('QUANTUM_FREEZE')}
+                title="Quantum Time Freeze (Matrix Protocol 0.05x)"
+              >
+                ❄️ Freeze
+              </button>
+              <button
+                className={`sim-btn quantum-btn portal-btn ${activeSimMode === 'DIMENSIONAL_PORTAL' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('DIMENSIONAL_PORTAL')}
+                title="Dimensional Portal (Doctor Strange Swirling Rift)"
+              >
+                🌀 Portal
+              </button>
+              <button
+                className={`sim-btn quantum-btn levitate-btn ${activeSimMode === 'JEDI_LEVITATION' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('JEDI_LEVITATION')}
+                title="Jedi Levitation (Anti-Gravity Field)"
+              >
+                🛸 Levitate
+              </button>
+              <button
+                className={`sim-btn jarvis-btn ray-btn ${activeSimMode === 'COSMIC_RAY' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('COSMIC_RAY')}
+                title="Cosmic Ray (Index Finger Trace)"
+              >
+                ⚡ Ray
+              </button>
+            </div>
+
+            {/* Phase 4 JARVIS Gesture Simulation Buttons */}
+            <div className="pip-sim-section-label">JARVIS DYNAMICS:</div>
+            <div className="pip-sim-buttons jarvis-grid">
+              <button
+                className={`sim-btn jarvis-btn shield-btn ${activeSimMode === 'DEFLECTOR_SHIELD' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('DEFLECTOR_SHIELD')}
+                title="Deflector Shield (Dual Palms Forward)"
+              >
+                🛡️ Shield
+              </button>
+              <button
+                className={`sim-btn jarvis-btn steer-btn ${activeSimMode === 'HOLO_STEER' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('HOLO_STEER')}
+                title="Holographic Globe Rotation (Dual Hand Steer)"
+              >
+                🌐 Steer
+              </button>
+              <button
+                className={`sim-btn jarvis-btn snap-btn ${activeSimMode === 'COSMIC_SNAP' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('COSMIC_SNAP')}
+                title="The Cosmic Snap (Thumb + Middle Finger Release)"
+              >
+                🫰 Snap
+              </button>
+              <button
+                className={`sim-btn twin-btn ${activeSimMode === 'TWIN_SINGULARITIES' ? 'active' : ''}`}
+                onClick={() => triggerSimulatedDualGesture('TWIN_SINGULARITIES')}
+                title="Twin Black Holes (Both Fists)"
+              >
+                🕳️ Twin
+              </button>
+            </div>
           </div>
         </>
       )}
